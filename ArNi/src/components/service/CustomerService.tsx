@@ -26,7 +26,7 @@ interface CustomerPayload extends Partial<Customer> {
 /** --- 3. Service Class --- **/
 
 class CustomerService {
-  private static BASE_URL = "http://localhost:8080/api";
+  private static BASE_URL = `${window.config.API_BASE_URL}/api`;
 
   // Helper to get headers with proper Axios typing
   private static getAuthHeaders(): RawAxiosRequestHeaders {

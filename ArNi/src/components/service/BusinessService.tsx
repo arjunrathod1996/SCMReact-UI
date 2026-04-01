@@ -20,7 +20,7 @@ export interface Category {
 /** --- 2. Service Class --- **/
 
 class BusinessService {
-  private static BASE_URL = "http://localhost:8080/api";
+  private static BASE_URL = `${window.config.API_BASE_URL}/api`;
 
   // FIX: Use RawAxiosRequestHeaders instead of a custom interface
   private static getAuthHeaders(): RawAxiosRequestHeaders {

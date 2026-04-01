@@ -28,7 +28,7 @@ export interface GetAllUsersResponse {
 }
 
 class UserService {
-  private static BASE_URL = "http://localhost:8080";
+  private static BASE_URL = window.config.API_BASE_URL;
 
   // Helper to get authorization header
   private static getHeader() {

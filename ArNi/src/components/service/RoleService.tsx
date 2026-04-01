@@ -6,7 +6,7 @@ import { Role } from '../../types';
 /** --- 2. Service Class --- **/
 
 class RoleService {
-  private static readonly BASE_URL: string = "http://localhost:8080/api";
+  private static readonly BASE_URL: string = `${window.config.API_BASE_URL}/api`;
 
   /**
    * Generates authorization headers.
