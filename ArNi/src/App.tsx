@@ -36,6 +36,7 @@ import Report from "./pages/Admin/Report/Report";
 // Locales
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
+import BusinessPage from "./components/userspage/BusinessPage";
 
 const messages: Record<string, any> = {
   en: enMessages,
@@ -162,7 +163,7 @@ function App() {
                     path="/dashboard/business"
                     element={
                       <PrivateRoute
-                        element={<BusinessTable businesses={[]} />}
+                        element={<BusinessPage user={user} />}
                         allowedRoles={["ROLE_ADMIN", "ROLE_MERCHANT", "ROLE_MERCHANT_STAFF", "ROLE_MERCHANT_ADMIN", "ROLE_ASSOCIATE"]}
                         user={user}
                       />

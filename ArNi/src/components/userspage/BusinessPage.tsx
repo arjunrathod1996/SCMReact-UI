@@ -6,6 +6,7 @@ import MessageDisplay from "../common/MessageModalDisplay";
 // import RotatingSquaresSpinner from "../common/RotatingSquaresSpinner";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { User } from "../../types";
 
 /** --- 1. Interfaces --- **/
 
@@ -19,9 +20,13 @@ interface BusinessMessages {
   modal: string; // Unified 'modal' and 'modals'
 }
 
+interface BusinessPageProps {
+  user?: User | null;
+}
+
 /** --- 2. Component --- **/
 
-const BusinessPage: React.FC = () => {
+const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   // Data States
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -259,7 +264,7 @@ const BusinessPage: React.FC = () => {
           onClick={performSearch}
           className="bg-blue-600 text-white px-6 py-2 rounded text-sm font-bold hover:bg-blue-700 transition-colors"
         >
-          REFRESH
+          SEARCH
         </button>
       </div>
 

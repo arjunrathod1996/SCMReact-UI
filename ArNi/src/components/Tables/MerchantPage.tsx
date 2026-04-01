@@ -7,7 +7,7 @@ import MerchantService from '../service/MerchantService';
 import DataTable, { TableColumn } from 'react-data-table-component';
 import api from '../api/api';
 import MessageDisplay from '../common/MessageModalDisplay';
-import { User } from '../../store'; // Import the user type
+import { User } from '../../types';
 
 /** --- 1. Interfaces --- **/
 

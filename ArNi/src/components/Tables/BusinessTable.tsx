@@ -311,7 +311,7 @@ const BusinessTable: React.FC<BusinessTableProps> = ({ businesses }) => {
           <label className="text-xs font-bold text-gray-500 mb-1">Start Date</label>
           <DatePicker
             selected={startDate}
-            onChange={(date) => setStartDate(date)}
+            onChange={(date: Date | null) => setStartDate(date)}
             dateFormat="yyyy-MM-dd"
             className="p-2 border border-gray-200 rounded text-sm w-32"
           />
