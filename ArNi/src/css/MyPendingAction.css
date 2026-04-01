@@ -1,0 +1,38 @@
+.full-container {
+    min-height: 100vh;
+    background-color: #f9f9f9;
+  }
+  
+  .tab-buttons .tab-btn {
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    border-radius: 50px;
+    padding: 10px 30px;
+    font-size: 18px;
+    margin: 0 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .tab-buttons .active-btn {
+    background-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .tab-buttons .tab-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .tab-content-area {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .content-box {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.2em;
+    color: #333;
+  }
+  

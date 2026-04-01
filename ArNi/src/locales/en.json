@@ -1,0 +1,17 @@
+{
+    "pnp.home.hi": "Hi, ",
+    "pnp.home.welcome": "Welcome to",
+    "pnp.mypnp.pendingActions": "My Pending Action(s)",
+    "pnp.home.myPnP":"MyP&P Scope",
+    "pnp.home.myRequests":"Dispensation Request(s)",
+    "pnp.home.pnpdashboard":"MyP&P Dashboard",
+    "pnp.home.repository":"Repository",
+    "pnp.mypnp.pedingActions":"My Pending Action(s)",
+    "pnp.mypnp.documentView":"Document View",
+    "pnp.mypnp.EntityView": "Entity View",
+    "pnp.fields.loading": "Loading....",
+    "pnp.home.archivedAction":"Archived Action",
+    "pnp.home.admin":"Admin"
+
+}
+  
