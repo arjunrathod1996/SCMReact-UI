@@ -38,7 +38,7 @@ const MessageDisplay: React.FC<MessageDisplayProps> = ({
   return (
     <div 
       role="alert" 
-      className={`p-4 mt-8 text-sm ${currentStyle} border rounded-md transition-opacity duration-300`}
+      className={`p-4 text-sm ${currentStyle} border rounded-md transition-opacity duration-300`}
     >
       {message}
     </div>

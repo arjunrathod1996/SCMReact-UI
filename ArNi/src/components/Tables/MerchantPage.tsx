@@ -288,14 +288,14 @@ const MerchantPage: React.FC<MerchantPageProps> = ({ user }) => {
   ];
 
   return (
-    <div className="p-3 lg:ml-64 mt-7 relative z-10">
+    <div className="p-4 lg:ml-64 relative z-10">
       <MessageDisplay 
         message={state.messages.general} 
         type={state.messages.general.toLowerCase().includes("success") ? "success" : "error"}
         clearMessage={() => dispatch({ type: "SET_MESSAGES", payload: { general: "" } })}
       />
 
-      <h1 className="text-2xl font-bold text-gray-400 uppercase mt-8 mb-4">Merchant Management</h1>
+      <h1 className="text-2xl font-bold text-gray-400 uppercase mb-4">Merchant Management</h1>
       
       <div className="bg-white p-4 shadow-md rounded-lg mb-4">
         <ActionButtons 

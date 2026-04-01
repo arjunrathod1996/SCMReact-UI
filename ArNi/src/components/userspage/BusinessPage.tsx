@@ -306,7 +306,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   ];
 
   return (
-    <div className="p-4 sm:ml-64 mt-8 relative z-10">
+    <div className="p-4 sm:ml-64  relative z-10">
       <MessageDisplay
         message={messages.general}
         type={messages.general.includes("success") ? "success" : "error"}
@@ -370,20 +370,22 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={openModal}
-          className="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700 shadow-sm transition-all"
-        >
-          + ADD BUSINESS
-        </button>
-        <div className="space-x-2">
+      <div className="flex justify-end items-center mb-4 w-full">
+        <div className="flex flex-wrap justify-end gap-2">
+          <button
+            onClick={openModal}
+            className="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700 shadow-sm transition-all"
+          >
+            ADD
+          </button>
+          
           <button
             onClick={handleEdit}
             className="bg-amber-500 text-white px-4 py-2 rounded text-sm font-bold hover:bg-amber-600 transition-all"
           >
             EDIT
           </button>
+          
           <button
             onClick={handleDelete}
             className="bg-red-500 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-600 transition-all"
@@ -394,7 +396,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden p-2">
         <DataTable
           columns={columns}
           data={data}
