@@ -45,12 +45,16 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   // Search & Pagination States
   const [name, setName] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [category, setCategory] = useState<string>(""); // Holds the Category ID for the API
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [totalRows, setTotalRows] = useState<number>(0);
+
+  // Custom Dropdown States 🚀
+  const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState<boolean>(false);
 
   // Selection & UI States
   const [selectedBusiness, setSelectedBusiness] = useState<
@@ -102,7 +106,6 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
     }
   };
 
- // 🚀 Unified fetch function to prevent race conditions & parse data safely
   const loadTableData = async () => {
     setLoading(true);
     try {
@@ -115,11 +118,10 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
           category,
           formatDate(startDate),
           formatDate(endDate),
-          currentPage - 1, // 👈 FIX 1: Send 0-indexed page to match standard Spring Boot backends
+          currentPage - 1,
           rowsPerPage
         );
 
-        // 👈 FIX 2: Safely extract data whether backend returns an Array, { content: [] }, or an Axios Response (result.data)
         const responseData = result.data || result;
         const fetchedContent = responseData.content !== undefined 
             ? responseData.content 
@@ -148,12 +150,10 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
     }
   };
 
-  // Fetch categories on mount
   useEffect(() => {
     fetchInitialData();
   }, []);
 
-  // Fetch table data ONLY when pagination changes
   useEffect(() => {
     loadTableData();
   }, [currentPage, rowsPerPage]);
@@ -161,8 +161,6 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   /** --- 5. Event Handlers --- **/
 
   const handleSearchClick = () => {
-    // If we are already on page 1, manually fetch data. 
-    // Otherwise, setting page to 1 will trigger the useEffect automatically.
     if (currentPage === 1) {
       loadTableData();
     } else {
@@ -217,7 +215,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
       } else {
         await BusinessService.saveBusiness(business);
       }
-      loadTableData(); // Refresh table data
+      loadTableData();
       closeModal();
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "Operation failed.";
@@ -279,7 +277,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
 
     try {
       await BusinessService.deleteBusiness(selectedBusiness);
-      loadTableData(); // Refresh table data
+      loadTableData();
       setSelectedBusiness(null);
       setMessages((prev) => ({ ...prev, general: "Deleted successfully" }));
     } catch {
@@ -288,6 +286,13 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
       setDeleteModalOpen(false);
     }
   };
+
+  /** --- Derived State for Custom Dropdown --- **/
+  const searchableCategories = filteredCategories.filter((cat) =>
+    (cat.name || cat.toString())
+      .toLowerCase()
+      .includes(categorySearchTerm.toLowerCase())
+  );
 
   /** --- 6. Table Columns --- **/
 
@@ -306,7 +311,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   ];
 
   return (
-    <div className="p-4 sm:ml-64  relative z-10">
+    <div className="p-4 sm:ml-64 relative z-10">
       <MessageDisplay
         message={messages.general}
         type={messages.general.includes("success") ? "success" : "error"}
@@ -330,22 +335,83 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
           />
         </div>
 
-        <div className="flex flex-col">
+       {/* 🚀 FIXED Searchable Dropdown */}
+        <div className="flex flex-col relative w-48">
           <label className="text-xs font-bold text-gray-500 mb-1">
             CATEGORY
           </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-          >
-            <option value="">All Categories</option>
-            {filteredCategories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name || cat.toString()}
-              </option>
-            ))}
-          </select>
+          <input
+            type="text"
+            placeholder="All Categories"
+            value={categorySearchTerm}
+            onChange={(e) => {
+              const val = e.target.value;
+              setCategorySearchTerm(val);
+              setIsCategoryDropdownOpen(true);
+              
+              // 👈 FIX 1: If the user types to change the search, clear the hidden category ID 
+              // so we don't accidentally send an old/stale ID to the backend.
+              setCategory(""); 
+            }}
+            onFocus={() => setIsCategoryDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setIsCategoryDropdownOpen(false), 200)}
+            className="px-3 py-2 border border-gray-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full"
+          />
+          
+          {isCategoryDropdownOpen && (
+            <ul className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+              {/* Reset Option */}
+              <li>
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 focus:bg-blue-50 focus:outline-none text-gray-700 transition-colors"
+                  onMouseDown={(e) => {
+                    e.preventDefault(); 
+                    setCategory("");
+                    setCategorySearchTerm("");
+                    setIsCategoryDropdownOpen(false);
+                  }}
+                >
+                  All Categories
+                </button>
+              </li>
+              
+              {/* Filtered Options */}
+              {searchableCategories.map((cat, index) => {
+                // 👈 FIX 2: Safely handle categories whether they have an ID or just a string name
+                const displayString = cat.name || cat.toString();
+                const catValue = cat.id !== undefined ? String(cat.id) : displayString;
+
+                return (
+                  <li key={cat.id || index}>
+                    <button
+                      type="button"
+                      className={`w-full text-left px-3 py-2 text-sm focus:outline-none transition-colors ${
+                        category === catValue
+                          ? "bg-blue-100 text-blue-700 font-semibold"
+                          : "text-gray-700 hover:bg-blue-50 focus:bg-blue-50"
+                      }`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setCategory(catValue); // Sends correct ID or Name to API
+                        setCategorySearchTerm(displayString); // Updates the text input
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                    >
+                      {displayString}
+                    </button>
+                  </li>
+                );
+              })}
+              
+              {/* No Results Fallback */}
+              {searchableCategories.length === 0 && (
+                <li className="px-3 py-2 text-sm text-gray-400 select-none">
+                  No matches found
+                </li>
+              )}
+            </ul>
+          )}
         </div>
 
         <div className="flex flex-col">
