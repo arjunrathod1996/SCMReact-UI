@@ -56,7 +56,7 @@ export interface Category {
 export const authAPI = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
     console.log('email',email);
-    const response = await axios.post(`${window.config.API_BASE_URL}/login/authenticate`, { email, password });
+    const response = await axios.post(`${window?.config?.API_BASE_URL}/login/authenticate`, { email, password });
     const token = response.data.jwtToken || response.data.token;
     if (token) {
       return { token };
@@ -66,12 +66,12 @@ export const authAPI = {
   },
 
   sendOtp: async (phoneNumber: string): Promise<string> => {
-    const response = await axios.post(`${window.config.API_BASE_URL}/auth/generate-otp/${phoneNumber}`);
+    const response = await axios.post(`${window?.config?.API_BASE_URL}/auth/generate-otp/${phoneNumber}`);
     return response.data;
   },
 
   loginWithPhone: async (phoneNumber: string, otp: string): Promise<AuthResponse> => {
-    const response = await axios.post(`${window.config.API_BASE_URL}/auth/verify-otp/${phoneNumber}/${otp}`);
+    const response = await axios.post(`${window?.config?.API_BASE_URL}/auth/verify-otp/${phoneNumber}/${otp}`);
     const token = response.data.token || response.data.jwtToken;
     if (token) {
       return { token };
@@ -81,7 +81,7 @@ export const authAPI = {
   },
 
   register: async (userData: RegisterRequest, token: string): Promise<any> => {
-    const response = await axios.post(`${window.config.API_BASE_URL}/admin/register`, userData, {
+    const response = await axios.post(`${window?.config?.API_BASE_URL}/admin/register`, userData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -90,7 +90,7 @@ export const authAPI = {
   getCurrentUser: async (): Promise<UserProfile | null> => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${window.config.API_BASE_URL}/user/current`, {
+      const response = await axios.get(`${window?.config?.API_BASE_URL}/user/current`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data;
@@ -104,28 +104,28 @@ export const authAPI = {
 // User Management API
 export const userAPI = {
   getUserById: async (userId: string, token: string): Promise<GetUserResponse> => {
-    const response = await axios.get(`${window.config.API_BASE_URL}/admin/get-users/${userId}`, {
+    const response = await axios.get(`${window?.config?.API_BASE_URL}/admin/get-users/${userId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
   },
 
   updateUser: async (userId: string, userData: UserProfile, token: string): Promise<any> => {
-    const response = await axios.put(`${window.config.API_BASE_URL}/admin/update/${userId}`, userData, {
+    const response = await axios.put(`${window?.config?.API_BASE_URL}/admin/update/${userId}`, userData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
   },
 
   getAllUsers: async (token: string): Promise<GetAllUsersResponse> => {
-    const response = await axios.get(`${window.config.API_BASE_URL}/admin/get-all-users`, {
+    const response = await axios.get(`${window?.config?.API_BASE_URL}/admin/get-all-users`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
   },
 
   deleteUser: async (userId: string, token: string): Promise<any> => {
-    const response = await axios.delete(`${window.config.API_BASE_URL}/admin/delete/${userId}`, {
+    const response = await axios.delete(`${window?.config?.API_BASE_URL}/admin/delete/${userId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;

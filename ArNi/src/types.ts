@@ -207,3 +207,14 @@ export interface ContentReview {
     active:boolean;
 }
 
+export interface Config {
+    API_BASE_URL?: string;
+    SCM_END_POINT?: string;
+  }
+  
+  declare global {
+    interface Window {
+      config: Config;
+    }
+  }
+  

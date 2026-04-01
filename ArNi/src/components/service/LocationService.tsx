@@ -29,7 +29,7 @@ interface PaginatedResponse<T> {
 /** --- 2. Service Class --- **/
 
 class LocationService {
-  private static BASE_URL = `${window.config.API_BASE_URL}/api`;
+  private static BASE_URL = `${window?.config?.API_BASE_URL}/api`;
 
   /**
    * Helper to retrieve authorization headers with proper Axios typing.

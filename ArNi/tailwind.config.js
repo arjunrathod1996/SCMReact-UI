@@ -1,3 +1,8 @@
+import flowbite from 'flowbite/plugin';
+import forms from '@tailwindcss/forms';
+import typography from '@tailwindcss/typography';
+import aspectRatio from '@tailwindcss/aspect-ratio';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -9,11 +14,11 @@ export default {
     extend: {},
   },
   plugins: [
-    require('flowbite/plugin'),
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
-]
+    flowbite,
+    forms,
+    typography,
+    aspectRatio,
+  ]
 }
 
 

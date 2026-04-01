@@ -17,7 +17,7 @@ export interface DomainRisk {
 /** --- 2. Service Class --- **/
 
 class DocumentTypeService {
-  private static BASE_URL = `${window.config.API_BASE_URL}/api`;
+  private static BASE_URL = `${window?.config?.API_BASE_URL}/api`;
 
   /**
    * Generates authorization headers for API requests.

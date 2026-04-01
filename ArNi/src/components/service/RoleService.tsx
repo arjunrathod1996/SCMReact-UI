@@ -6,7 +6,7 @@ import { Role } from '../../types';
 /** --- 2. Service Class --- **/
 
 class RoleService {
-  private static readonly BASE_URL: string = `${window.config.API_BASE_URL}/api`;
+  private static readonly BASE_URL: string = `${window?.config?.API_BASE_URL}/api`;
 
   /**
    * Generates authorization headers.
