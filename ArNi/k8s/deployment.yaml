@@ -1,0 +1,60 @@
+# ArNi/k8s/deployment.yaml
+
+# --- Development Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arni-react-dev
+  namespace: arni-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arni-react-dev
+  template:
+    metadata:
+      labels:
+        app: arni-react-dev
+    spec:
+      containers:
+        - name: arni-react
+          image: arni-react:dev-latest # Example image tag for dev
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/nginx/html/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: arni-react-dev-cm
+
+---
+# --- Homologation/Staging Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arni-react-homol
+  namespace: arni-homol
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: arni-react-homol
+  template:
+    metadata:
+      labels:
+        app: arni-react-homol
+    spec:
+      containers:
+        - name: arni-react
+          image: arni-react:homol-latest # Example image tag for homol
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/nginx/html/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: arni-react-homol-cm

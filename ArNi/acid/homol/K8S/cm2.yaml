@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config-homol
-  namespace: default
-data:
-  ENVIRONMENT: "homol"
-  SCM_END_POINT: "http://homol.scm.india:8080"
-  # Add other environment-specific configurations here

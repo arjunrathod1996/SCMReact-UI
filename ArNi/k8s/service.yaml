@@ -1,0 +1,32 @@
+# ArNi/k8s/service.yaml
+
+# --- Development Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: arni-react-dev-svc
+  namespace: arni-dev
+spec:
+  type: ClusterIP # Change to LoadBalancer or NodePort if you need external access
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: arni-react-dev
+
+---
+# --- Homologation/Staging Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: arni-react-homol-svc
+  namespace: arni-homol
+spec:
+  type: ClusterIP # Change to LoadBalancer or NodePort if you need external access
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: arni-react-homol

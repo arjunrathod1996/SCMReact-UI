@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config-dev
-  namespace: default
-data:
-  ENVIRONMENT: "dev"
-  SCM_END_POINT: "http://dev.scm.india:8080"
-  # Add other environment-specific configurations here

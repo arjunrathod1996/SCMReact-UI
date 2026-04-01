@@ -1,0 +1,98 @@
+name: promote image and release
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-image-tag:
+        description: 'source image tag (kube9-dtr-dev.fr.world.socgen/pps-a8656-dev-homol/pps-ui-homol:<image digest here>)'
+        required: true
+        type: string
+
+jobs:
+  promote-image:
+    runs-on: [self-hosted]
+
+    outputs:
+      package-version: ${{ steps.generate-image-digest.outputs.PKG_VERSION }}
+
+    steps:
+      - name: validate image tag
+        run: |
+          DTR_PATH="kube9-dtr-dev.fr.world.socgen/pps-a8656-dev-homol/pps-ui-homol"
+          if [[ "${{ inputs.source-image-tag }}" != "$DTR_PATH"* ]]; then
+            echo "Error: wrong source image path, expected pattern kube9-dtr-dev.fr.world.socgen/pps-a8656-dev-homol/pps-ui-homol:<image digest here>"
+            exit 1
+          fi
+
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: setup node.js 14.17.3
+        uses: SGitHubActions/setup-node@stable
+        with:
+          node-version: 14.17.3
+          registry-url: https://sofa.dns20.socgen/nexus/repository/npm-public/
+
+      - name: generate image digest
+        id: generate-image-digest
+        run: |
+          PKG_VERSION=node -p "require('./package.json').version"
+          COMMIT=$(git log -n 1 --pretty=format:"%h")
+          echo "PKG_VERSION=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "COMMIT=$COMMIT" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: construct release image tag
+        id: construct-release-image-tag
+        run: |
+          RELEASE_IMAGE_TAG="kube9-dtr-prod.fr.world.socgen/pps-a8656-prd-prod/pps-ui-prod:${{ steps.generate-image-digest.outputs.PKG_VERSION }}"
+          echo "RELEASE_IMAGE_TAG=$RELEASE_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "release image tag is $RELEASE_IMAGE_TAG"
+
+      - name: scan image and promote to prod dtr
+        uses: SGitHubActions/trigger-remote-job@stable
+        with:
+          jenkins_url: ${{ vars.IMAGE_DEV2_PROD_URL }}
+          jenkins_user: ${{ secrets.DOCKER_REGISTRY_SA_NAME }}
+          jenkins_password: ${{ secrets.DOCKER_REGISTRY_SA_PASS }}
+          job_name: imageDev2Prod
+          job_params: >
+            {
+              "SOURCE_IMAGE": "${{ inputs.source-image-tag }}",
+              "TARGET_IMAGE": "${{ steps.construct-release-image-tag.outputs.RELEASE_IMAGE_TAG }}",
+              "CHOICE_ARG": "push",
+              "AD_USER": "${{ secrets.DOCKER_REGISTRY_SA_NAME }}",
+              "AD_PASSWORD": "${{ secrets.DOCKER_REGISTRY_SA_PASS }}"
+            }
+
+  release-app:
+    needs: promote-image
+    runs-on: [self-hosted]
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: set tag in deployment manifest file
+        run: |
+          sed -i -e 's,IMAGE_TAG,${{ needs.promote-image.outputs.package-version }},g' acid/prod/K8S/deployment.yaml
+          cat acid/prod/K8S/deployment.yaml
+        shell: bash
+
+      - name: deploy application in Kube cluster
+        uses: SGitHubActions/kube-deploy@main
+        with:
+          kube-config: ${{ secrets.PROD_KUBE_CONFIG }}
+          workspace: pps-a8656-prd-prod
+          kubernetes-files-directory: ./acid/prod/K8S
+
+      - name: Health check
+        run: |
+          sleep 10s
+          kubectl wait pod \
+            --selector=app.kubernetes.io/name=pps-ui-prod \
+            --for=condition=Ready \
+            --namespace=ns-pps-a8656-prd-prod \
+            --all \
+            --timeout=8m
+        shell: bash

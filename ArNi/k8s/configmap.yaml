@@ -1,0 +1,30 @@
+# ArNi/k8s/configmap.yaml
+
+# --- Development ConfigMap ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arni-react-dev-cm
+  namespace: arni-dev
+data:
+  env.js: |
+    window.env = {
+      ENVIRONMENT: 'development',
+      API_BASE_URL: 'https://api.dev.example.com',
+      // Add other development-specific variables here
+    };
+
+---
+# --- Homologation/Staging ConfigMap ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arni-react-homol-cm
+  namespace: arni-homol
+data:
+  env.js: |
+    window.env = {
+      ENVIRONMENT: 'homologation',
+      API_BASE_URL: 'https://api.homol.example.com',
+      // Add other homologation-specific variables here
+    };

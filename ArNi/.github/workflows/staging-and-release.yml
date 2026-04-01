@@ -1,0 +1,263 @@
+name: staging and release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'select the environment'
+        required: true
+        type: choice
+        default: homologation
+        options:
+          - homologation
+          - production
+
+      artifact-manager:
+        description: 'artifact manager'
+        required: false
+        type: choice
+        default: jfrog
+        options:
+          - nexus
+          - jfrog
+
+      skip-tests:
+        description: 'skip test cases'
+        required: false
+        type: boolean
+        default: false
+
+      skip-sonar:
+        description: 'skip sonar scanner'
+        required: false
+        type: boolean
+        default: false
+
+      skip-quality-gate:
+        description: 'skip quality gate'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  jfrog-ci-job:
+    if: github.event.inputs.artifact-manager == 'jfrog'
+    runs-on: [self-hosted]
+
+    outputs:
+      source-image: ${{ steps.generate-image-digest.outputs.IMAGE_FULL_NAME }}
+      package-version: ${{ steps.generate-image-digest.outputs.PKG_VERSION }}
+      commit: ${{ steps.generate-image-digest.outputs.COMMIT }}
+
+    env:
+      JFROG_CLI_RELEASES_REPO: ${{ vars.JFROG_CLI_RELEASES_REPO }}
+      NPM_VIRTUAL: ${{ vars.JF_NPM_VIRTUAL }}
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: setup node.js 14.17.3
+        uses: SGitHubActions/setup-node@stable
+        with:
+          node-version: 14.17.3
+          registry-url: https://sofa.dns20.socgen/nexus/repository/npm-public/
+
+      - name: cache npm dependencies
+        uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: install and configure jfrog cli
+        uses: SGitHubActions/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ vars.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+        with:
+          download-repository: jfrog-cli-remote
+
+      - name: configure artifactory
+        run: |
+          jf npm-config --repo-resolve=$NPM_VIRTUAL
+          jf c show
+
+      - name: Install npm packages
+        run: jf npm ci
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        shell: bash
+
+      - name: Check Lint
+        run: npm run lint --if-present
+        shell: bash
+
+      - name: Run tests
+        run: npm run test --if-present
+        if: github.event.inputs.skip-tests != 'true'
+        shell: bash
+
+      - name: Build application
+        run: npm run build
+        shell: bash
+
+      - name: install and launch sonar analysis
+        uses: SGitHubActions/sonar-scanner@stable
+        if: ${{ (github.event.inputs.skip-sonar != 'true') && (github.event.inputs.skip-tests != 'true') }}
+        with:
+          scanner-version: '7.2.0+5079'
+          sonar-properties: 'sonar-project.properties'
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        if: github.event.inputs.skip-quality-gate != 'true'
+        uses: SGitHubActions/sonarqube-quality-gate-action@stable
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://dsp-sonar.fr.world.socgen/sonar/
+
+      - name: generate image digest
+        id: generate-image-digest
+        run: |
+          PKG_VERSION=node -p "require('./package.json').version"
+          COMMIT=$(git log -n 1 --pretty=format:"%h")
+          IMAGE_FULL_NAME=kube9-dtr-dev.fr.world.socgen/pps-a8656-dev-homol/pps-ui-homol:$COMMIT
+          echo "PKG_VERSION=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "COMMIT=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_FULL_NAME=$IMAGE_FULL_NAME" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: UAT | dockerize and push the image
+        if: ${{ github.event.inputs.environment == 'homologation' }}
+        uses: SGitHubActions/build-push-action@stable
+        with:
+          registry: harbor01.eu-fr-paris.cloud.socgen
+          dockerfile-path: acid/homol/Docker/Dockerfile
+          tags: pps-a8656-prd-apps/pps-ui-homol:${{ steps.generate-image-digest.outputs.COMMIT }}
+        env:
+          DOCKER_USER: ${{ secrets.HARBOR_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: PROD | dockerize and push the image
+        if: ${{ github.event.inputs.environment == 'production' }}
+        uses: SGitHubActions/build-push-action@stable
+        with:
+          registry: harbor01.eu-fr-paris.cloud.socgen
+          dockerfile-path: acid/homol/Docker/Dockerfile
+          tags: pps-a8656-prd-apps/pps-ui-prod:${{ steps.generate-image-digest.outputs.PKG_VERSION }}
+        env:
+          DOCKER_USER: ${{ secrets.HARBOR_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+
+  nexus-ci-job:
+    if: github.event.inputs.artifact-manager == 'nexus'
+    runs-on: [self-hosted]
+
+    outputs:
+      source-image: ${{ steps.generate-image-digest.outputs.IMAGE_FULL_NAME }}
+      package-version: ${{ steps.generate-image-digest.outputs.PKG_VERSION }}
+      commit: ${{ steps.generate-image-digest.outputs.COMMIT }}
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: setup node.js 14.17.3
+        uses: SGitHubActions/setup-node@stable
+        with:
+          node-version: 14.17.3
+          registry-url: https://sofa.dns20.socgen/nexus/repository/npm-public/
+
+      - name: cache npm dependencies
+        uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install npm packages
+        run: npm ci
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+
+      - name: Check Lint
+        run: npm run lint --if-present
+
+      - name: Run tests
+        run: npm run test --if-present
+        if: github.event.inputs.skip-tests != 'true'
+
+      - name: Build application
+        run: npm run build
+
+      - name: generate image digest
+        id: generate-image-digest
+        run: |
+          PKG_VERSION=node -p "require('./package.json').version"
+          COMMIT=$(git log -n 1 --pretty=format:"%h")
+          IMAGE_FULL_NAME=kube9-dtr-dev.fr.world.socgen/pps-a8656-dev-homol/pps-ui-homol:$COMMIT
+          echo "PKG_VERSION=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "COMMIT=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_FULL_NAME=$IMAGE_FULL_NAME" >> "$GITHUB_OUTPUT"
+
+  stage-app:
+    needs: [jfrog-ci-job, nexus-ci-job]
+    if: ${{ always() && github.event.inputs.environment == 'homologation' && (needs.jfrog-ci-job.result == 'success' || needs.nexus-ci-job.result == 'success') }}
+    runs-on: [self-hosted]
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: set tag in deployment manifest file
+        run: |
+          sed -i -e 's,IMAGE_TAG,${{ needs.jfrog-ci-job.outputs.commit || needs.nexus-ci-job.outputs.commit }},g' acid/homol/K8S/deployment.yaml
+          cat acid/homol/K8S/deployment.yaml
+
+      - name: deploy application in Kube cluster
+        uses: SGitHubActions/kube-deploy@main
+        with:
+          kube-config: ${{ secrets.KUBE_CONFIG }}
+          workspace: pps-a8656-dev-homol
+          kubernetes-files-directory: ./acid/homol/K8S
+
+      - name: Health check
+        run: |
+          sleep 10s
+          kubectl wait pod \
+            --selector=app.kubernetes.io/name=pps-ui-homol \
+            --for=condition=Ready \
+            --namespace=ns-pps-a8656-dev-homol \
+            --all \
+            --timeout=8m
+
+  release-app:
+    needs: [jfrog-ci-job, nexus-ci-job]
+    if: ${{ always() && github.event.inputs.environment == 'production' && (needs.jfrog-ci-job.result == 'success' || needs.nexus-ci-job.result == 'success') }}
+    runs-on: [self-hosted]
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: set tag in deployment manifest file
+        run: |
+          sed -i -e 's,IMAGE_TAG,${{ needs.jfrog-ci-job.outputs.package-version || needs.nexus-ci-job.outputs.package-version }},g' acid/prod/K8S/deployment.yaml
+          cat acid/prod/K8S/deployment.yaml
+
+      - name: deploy application in Kube cluster
+        uses: SGitHubActions/kube-deploy@main
+        with:
+          kube-config: ${{ secrets.PROD_KUBE_CONFIG }}
+          workspace: pps-a8656-prd-prod
+          kubernetes-files-directory: ./acid/prod/K8S
+
+      - name: Health check
+        run: |
+          sleep 10s
+          kubectl wait pod \
+            --selector=app.kubernetes.io/name=pps-ui-prod \
+            --for=condition=Ready \
+            --namespace=ns-pps-a8656-prd-prod \
+            --all \
+            --timeout=8m
