@@ -54,7 +54,8 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
 
   // Custom Dropdown States 🚀
   const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState<boolean>(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] =
+    useState<boolean>(false);
 
   // Selection & UI States
   const [selectedBusiness, setSelectedBusiness] = useState<
@@ -109,7 +110,8 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   const loadTableData = async () => {
     setLoading(true);
     try {
-      const hasSearchFilters = name || fullName || category || startDate || endDate;
+      const hasSearchFilters =
+        name || fullName || category || startDate || endDate;
 
       if (hasSearchFilters) {
         const result = await BusinessService.searchBusinesses(
@@ -119,15 +121,19 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
           formatDate(startDate),
           formatDate(endDate),
           currentPage - 1,
-          rowsPerPage
+          rowsPerPage,
         );
 
         const responseData = result.data || result;
-        const fetchedContent = responseData.content !== undefined 
-            ? responseData.content 
-            : (Array.isArray(responseData) ? responseData : []);
-        const fetchedTotal = responseData.totalElements !== undefined 
-            ? responseData.totalElements 
+        const fetchedContent =
+          responseData.content !== undefined
+            ? responseData.content
+            : Array.isArray(responseData)
+              ? responseData
+              : [];
+        const fetchedTotal =
+          responseData.totalElements !== undefined
+            ? responseData.totalElements
             : fetchedContent.length;
 
         setData(fetchedContent);
@@ -169,14 +175,14 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   };
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setBusiness((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFocus = (
-    e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name } = e.target;
     setMessages((prev) => ({ ...prev, [name]: "" }));
@@ -291,7 +297,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
   const searchableCategories = filteredCategories.filter((cat) =>
     (cat.name || cat.toString())
       .toLowerCase()
-      .includes(categorySearchTerm.toLowerCase())
+      .includes(categorySearchTerm.toLowerCase()),
   );
 
   /** --- 6. Table Columns --- **/
@@ -318,7 +324,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
         clearMessage={() => setMessages((prev) => ({ ...prev, general: "" }))}
       />
 
-      <h1 className="text-2xl font-bold mb-6 text-gray-400 uppercase tracking-wider">
+      <h1 className="text-2xl font-bold mb-4 text-gray-400 uppercase tracking-wider">
         Business Registry
       </h1>
 
@@ -335,7 +341,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
           />
         </div>
 
-       {/* 🚀 FIXED Searchable Dropdown */}
+        {/* 🚀 FIXED Searchable Dropdown */}
         <div className="flex flex-col relative w-48">
           <label className="text-xs font-bold text-gray-500 mb-1">
             CATEGORY
@@ -348,16 +354,18 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
               const val = e.target.value;
               setCategorySearchTerm(val);
               setIsCategoryDropdownOpen(true);
-              
-              // 👈 FIX 1: If the user types to change the search, clear the hidden category ID 
+
+              // 👈 FIX 1: If the user types to change the search, clear the hidden category ID
               // so we don't accidentally send an old/stale ID to the backend.
-              setCategory(""); 
+              setCategory("");
             }}
             onFocus={() => setIsCategoryDropdownOpen(true)}
-            onBlur={() => setTimeout(() => setIsCategoryDropdownOpen(false), 200)}
+            onBlur={() =>
+              setTimeout(() => setIsCategoryDropdownOpen(false), 200)
+            }
             className="px-3 py-2 border border-gray-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full"
           />
-          
+
           {isCategoryDropdownOpen && (
             <ul className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
               {/* Reset Option */}
@@ -366,7 +374,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
                   type="button"
                   className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 focus:bg-blue-50 focus:outline-none text-gray-700 transition-colors"
                   onMouseDown={(e) => {
-                    e.preventDefault(); 
+                    e.preventDefault();
                     setCategory("");
                     setCategorySearchTerm("");
                     setIsCategoryDropdownOpen(false);
@@ -375,12 +383,13 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
                   All Categories
                 </button>
               </li>
-              
+
               {/* Filtered Options */}
               {searchableCategories.map((cat, index) => {
                 // 👈 FIX 2: Safely handle categories whether they have an ID or just a string name
                 const displayString = cat.name || cat.toString();
-                const catValue = cat.id !== undefined ? String(cat.id) : displayString;
+                const catValue =
+                  cat.id !== undefined ? String(cat.id) : displayString;
 
                 return (
                   <li key={cat.id || index}>
@@ -403,7 +412,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
                   </li>
                 );
               })}
-              
+
               {/* No Results Fallback */}
               {searchableCategories.length === 0 && (
                 <li className="px-3 py-2 text-sm text-gray-400 select-none">
@@ -415,9 +424,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
         </div>
 
         <div className="flex flex-col">
-          <label className="text-xs font-bold text-gray-500 mb-1">
-            START DATE
-          </label>
+          <label className="text-xs font-bold text-gray-500 ">START DATE</label>
           <DatePicker
             selected={startDate}
             onChange={(date: Date | null) => setStartDate(date)}
@@ -440,23 +447,65 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
         <div className="flex flex-wrap justify-end gap-2">
           <button
             onClick={openModal}
-            className="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700 shadow-sm transition-all"
+            className="bg-green-400 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700 shadow-sm transition-all"
           >
-            ADD
+            <svg
+              className="w-5 h-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 12h14m-7 7V5"
+              />
+            </svg>
           </button>
-          
+
           <button
             onClick={handleEdit}
             className="bg-amber-500 text-white px-4 py-2 rounded text-sm font-bold hover:bg-amber-600 transition-all"
           >
-            EDIT
+            <svg
+              className="w-5 h-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"
+              />
+            </svg>
           </button>
-          
+
           <button
             onClick={handleDelete}
             className="bg-red-500 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-600 transition-all"
           >
-            DELETE
+            <svg
+              className="w-5 h-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
+              />
+            </svg>
           </button>
         </div>
       </div>
