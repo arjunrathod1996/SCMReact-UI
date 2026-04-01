@@ -149,7 +149,10 @@ nav .dropdown .dropdown-item:hover {
   color: white;
 }
 
-
+/* Hide the default data-table dropdown arrow, keep the Tailwind arrow */
+.rdt_Pagination select + svg {
+  display: none !important;
+}
 
 
 /* .modal {

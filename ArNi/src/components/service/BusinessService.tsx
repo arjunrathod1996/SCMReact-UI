@@ -23,13 +23,20 @@ class BusinessService {
   private static BASE_URL = `${window?.config?.API_BASE_URL}/api`;
 
   // FIX: Use RawAxiosRequestHeaders instead of a custom interface
-  private static getAuthHeaders(): RawAxiosRequestHeaders {
-    const token = localStorage.getItem("token");
+ private static getAuthHeaders(): RawAxiosRequestHeaders {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
     return {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
   }
+
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+}
 
   static async fetchBusinesses(): Promise<Business[]> {
     try {
