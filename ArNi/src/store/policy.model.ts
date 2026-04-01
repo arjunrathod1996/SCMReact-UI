@@ -1,4 +1,4 @@
-import { PolicyAllData } from "./policy.type";
+import { PolicyAllData } from "./types";
 
 const initialPolicyDetails: PolicyAllData = {
     inProgress: 0,

@@ -1,17 +1,12 @@
 import axios, { AxiosResponse, RawAxiosRequestHeaders } from 'axios';
+import { Role } from '../../types';
 
 /** --- 1. Interfaces --- **/
-
-export interface Role {
-  id: string | number;
-  name: string; // The value usually sent to the backend (e.g., 'ROLE_ADMIN')
-  tag: string;  // The human-readable label (e.g., 'Admin')
-}
 
 /** --- 2. Service Class --- **/
 
 class RoleService {
-  private static BASE_URL = "http://localhost:8080/api";
+  private static readonly BASE_URL: string = "http://localhost:8080/api";
 
   /**
    * Generates authorization headers.

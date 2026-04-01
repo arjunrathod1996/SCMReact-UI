@@ -1,14 +1,5 @@
 import { create } from 'zustand';
-import { Role } from './components/service/RoleService';
-
-export interface User {
-  id: number;           // Changed from string to number
-  email: string;        // Added based on your error message
-  name: string;         // Added based on your error message
-  role: Role;
-  phoneNumber?: string; // Optional (the '?' handles the 'undefined' error)
-  city?: string;        // Optional
-}
+import { User } from './types';
 
 interface AuthStore {
   user: User | null;

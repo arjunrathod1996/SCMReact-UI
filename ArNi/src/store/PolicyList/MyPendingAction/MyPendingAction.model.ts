@@ -1,10 +1,5 @@
 
-import { DocumentDetails} from '../../PolicyList/MyPendingAction/MyPendingActionDetail.type';
-
-export interface MyPendingActionListModel {
-    documentList: DocumentDetails[];
-    documentLoading: boolean;
-}
+import { MyPendingActionListModel } from '../../../types';
 
 export const myPendingActionListModel : MyPendingActionListModel = {
     documentList:[],
