@@ -1,6 +1,5 @@
 import React, {
   useEffect,
-  useId,
   useReducer,
   useRef,
   useState,
@@ -47,12 +46,7 @@ const Report: React.FC<ReportProps> = ({ name1, user }) => {
   const { data, loading_ } = useAppSelector((state) => state.region);
 
   const [count, setCount] = useState(0);
-  const [count1, setCount1] = useState(0);
-  const [name, setName] = useState("N/A");
-  const [isChecked, setCheck] = useState(false);
-  const [formData, setForm] = useState({ name: "N/A", age: "N/A" });
-
-  const id = useId();
+  
   const nameRef = useRef<HTMLInputElement | null>(null);
   const ageRef = useRef<HTMLInputElement | null>(null);
 
@@ -73,13 +67,7 @@ const Report: React.FC<ReportProps> = ({ name1, user }) => {
   const increaseCount = () => setCount((prev) => prev + 1);
   const decreaseCount = () => setCount((prev) => prev - 1);
   const resetCount = () => setCount(0);
-  const updateCount = (value: number) => setCount1((prev) => prev + value);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("name:", nameRef.current?.value);

@@ -9,15 +9,7 @@ import { RESOURCE } from "../../utils/constants";
 import { PNPRoles } from "../../utils/Enums";
 import { User } from "../../store";
 
-const ROLES_ALLOWED_FOR_REPORT = [
-  RESOURCE + PNPRoles.OWNER,
-  RESOURCE + PNPRoles.PUBLISHER,
-  RESOURCE + PNPRoles.CORRESPONDENT,
-  RESOURCE + PNPRoles.SUPERUSER,
-  RESOURCE + PNPRoles.OVER_SIGHT,
-  RESOURCE + PNPRoles.CENTRAL_APPROVER,
-  RESOURCE + PNPRoles.LOCAL_APPROVER,
-];
+
 
 function PNPHome({ user }: { user: User | null }) {
   const { formatMessage } = useIntl();

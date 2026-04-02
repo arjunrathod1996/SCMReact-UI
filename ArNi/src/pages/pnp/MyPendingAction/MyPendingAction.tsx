@@ -26,10 +26,7 @@ const MyPendingAction = () => {
         marginBottom: "16px",
     };
 
-    const tabContentStyle = {
-        padding: "16px",
-        backgroundColor: "#f8f9fa", // Adjust background color as needed
-    };
+
 
     const buttonStyle = {
         margin: "0 2px",
