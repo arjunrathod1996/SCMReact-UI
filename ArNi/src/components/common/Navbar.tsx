@@ -9,7 +9,8 @@ import {
   FaCog,
   FaSignOutAlt,
   FaBriefcase, 
-  FaStore
+  FaStore,
+  FaUserTie
 } from "react-icons/fa";
 
 // 1. Define Props Interface
@@ -33,7 +34,6 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [businessDropdownOpen, setBusinessDropdownOpen] = useState<boolean>(false);
-  const [locationDropdownOpen, setLocationDropdownOpen] = useState<boolean>(false);
   const [userInfo, setUserInfo] = useState<SimpleUserInfo>({ email: "", phoneNumber: "" });
 
   // 4. Typing for Refs
@@ -77,7 +77,6 @@ useEffect(() => {
       ) {
         setDropdownVisible(false);
         setBusinessDropdownOpen(false);
-        setLocationDropdownOpen(false);
       }
     };
 
@@ -89,7 +88,6 @@ useEffect(() => {
 
   const toggleBusinessDropdown = (): void => {
     setBusinessDropdownOpen(!businessDropdownOpen);
-    setLocationDropdownOpen(false);
   };
 
   useEffect(() => {
@@ -98,10 +96,6 @@ useEffect(() => {
       path.startsWith("/dashboard/business") || 
       path.startsWith("/dashboard/merchant") || 
       path.startsWith("/dashboard/role")
-    );
-    setLocationDropdownOpen(
-      path.startsWith("/dashboard/country") || 
-      path.startsWith("/dashboard/region")
     );
   }, [location]);
 

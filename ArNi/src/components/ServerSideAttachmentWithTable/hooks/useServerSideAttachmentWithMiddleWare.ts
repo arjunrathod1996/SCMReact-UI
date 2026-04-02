@@ -18,7 +18,7 @@ interface ServerSideDocumentReducer {
 const REDUCER_INTITIAL_STATE = {}; // Initialize your reducer state
 
 // The reducer function (severSideFileUploadReducer) needs to be defined somewhere
-const severSideFileUploadReducer = (state: any, _: ServerSideAttachmentTableActions) => {
+const severSideFileUploadReducer = (state: any, _action: ServerSideAttachmentTableActions) => { // eslint-disable-line @typescript-eslint/no-unused-vars
   // Implement the reducer logic here
   return state;
 };

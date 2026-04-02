@@ -5,8 +5,6 @@ import { Col } from "reactstrap";
 import styles from "./PNPHome.module.scss";
 import ActionCard from "../../components/ActionCard/ActionCard";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
-import { RESOURCE } from "../../utils/constants";
-import { PNPRoles } from "../../utils/Enums";
 import { User } from "../../store";
 
 
