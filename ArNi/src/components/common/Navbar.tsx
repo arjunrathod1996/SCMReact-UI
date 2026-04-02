@@ -9,8 +9,7 @@ import {
   FaCog,
   FaSignOutAlt,
   FaBriefcase, 
-  FaStore,
-  FaUserTie
+  FaStore
 } from "react-icons/fa";
 
 // 1. Define Props Interface
@@ -30,15 +29,11 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
   const location = useLocation();
 
   // 3. States with explicit types
-  const [profileInfo, setProfileInfo] = useState<User | null>(null);
   const [dropdownVisible, setDropdownVisible] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  const [subDropdownOpen, setSubDropdownOpen] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-  const [activeRoute, setActiveRoute] = useState<string>(location.pathname);
   const [businessDropdownOpen, setBusinessDropdownOpen] = useState<boolean>(false);
   const [locationDropdownOpen, setLocationDropdownOpen] = useState<boolean>(false);
-  const [merchantDropdownOpen, setMerchantDropdownOpen] = useState<boolean>(false);
   const [userInfo, setUserInfo] = useState<SimpleUserInfo>({ email: "", phoneNumber: "" });
 
   // 4. Typing for Refs
@@ -55,7 +50,6 @@ useEffect(() => {
             email: userData.email || "",
             phoneNumber: userData.phoneNumber || "",
           });
-          setProfileInfo(userData);
           setUser(userData );
         }
       })
@@ -69,7 +63,6 @@ useEffect(() => {
     UserService.logout();
     localStorage.removeItem("token");
     setUserInfo({ email: "", phoneNumber: "" });
-    setProfileInfo(null);
     setUser(null);
     navigate("/login");
   };
@@ -85,7 +78,6 @@ useEffect(() => {
         setDropdownVisible(false);
         setBusinessDropdownOpen(false);
         setLocationDropdownOpen(false);
-        setMerchantDropdownOpen(false);
       }
     };
 
@@ -100,11 +92,6 @@ useEffect(() => {
     setLocationDropdownOpen(false);
   };
 
-  const toggleLocationDropdown = (): void => {
-    setLocationDropdownOpen(!locationDropdownOpen);
-    setBusinessDropdownOpen(false);
-  };
-
   useEffect(() => {
     const path = location.pathname;
     setBusinessDropdownOpen(
@@ -116,8 +103,6 @@ useEffect(() => {
       path.startsWith("/dashboard/country") || 
       path.startsWith("/dashboard/region")
     );
-    setActiveRoute(path);
-    setSubDropdownOpen(path.startsWith("/products"));
   }, [location]);
 
   const toggleSidebar = (): void => {

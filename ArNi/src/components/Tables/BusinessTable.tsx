@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent, FocusEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent, FocusEvent, useCallback } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -56,7 +56,7 @@ interface BusinessTableProps {
 const BusinessTable: React.FC<BusinessTableProps> = ({ businesses }) => {
   // Data States
   const [data, setData] = useState<Business[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]); 
+  const [categories, setCategories] = useState<Category[]>([]);
   
   // Table States
   const [loading, setLoading] = useState<boolean>(true);
@@ -68,7 +68,7 @@ const BusinessTable: React.FC<BusinessTableProps> = ({ businesses }) => {
   const [nameSearch, setNameSearch] = useState<string>("");
   const [fullNameSearch, setFullNameSearch] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [endDate] = useState<Date | null>(null);
 
   const [filters, setFilters] = useState<FilterState>({
     name: null,
@@ -110,7 +110,7 @@ const BusinessTable: React.FC<BusinessTableProps> = ({ businesses }) => {
     }
   }, [businesses]);
 
-  const fetchData = async (page: number = 1, size: number = 10, currentFilters: Partial<FilterState> = {}) => {
+  const fetchData = useCallback(async (page: number = 1, size: number = 10, currentFilters: Partial<FilterState> = {}) => {
     // Only fetch if parent didn't provide data
     if (businesses) return; 
 
@@ -131,11 +131,11 @@ const BusinessTable: React.FC<BusinessTableProps> = ({ businesses }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [businesses]);
 
   useEffect(() => {
     fetchData(currentPage, rowsPerPage, filters);
-  }, [currentPage, rowsPerPage, filters, businesses]);
+  }, [currentPage, rowsPerPage, filters, businesses, fetchData]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -232,7 +232,7 @@ const BusinessTable: React.FC<BusinessTableProps> = ({ businesses }) => {
         } else {
           setMessages((prev) => ({ ...prev, general: "Selected business has no valid ID." }));
         }
-      } catch (error) {
+      } catch {
         setMessages((prev) => ({ ...prev, general: "Error deleting business." }));
       }
     }

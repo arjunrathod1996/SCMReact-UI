@@ -1,13 +1,16 @@
-type User = {
+import React from "react";
+
+export type User = {
   id: number;
   name: string;
   roles: string[];
+  email?: string;
 };
 
-type UserContextType = {
+export type UserContextType = {
   user: User | null;
   loading: boolean;
-  refreshUser: () => Promise<void>;
+  refreshUser?: () => Promise<void>;
 };
 
-const UserContext = React.createContext<UserContextType | null>(null);
+export const UserContext = React.createContext<UserContextType | null>(null);

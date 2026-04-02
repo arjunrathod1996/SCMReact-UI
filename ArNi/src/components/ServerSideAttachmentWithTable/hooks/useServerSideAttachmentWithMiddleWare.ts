@@ -8,7 +8,6 @@ interface ServerSideAttachmentTableActions {
 
 interface ServerSideAttachmentWithMiddleWare {
   afterWareFns?: ((actionType: string) => void)[];
-  middleWareFns?: ((action: ServerSideAttachmentTableActions) => void)[];
 }
 
 interface ServerSideDocumentReducer {
@@ -19,14 +18,13 @@ interface ServerSideDocumentReducer {
 const REDUCER_INTITIAL_STATE = {}; // Initialize your reducer state
 
 // The reducer function (severSideFileUploadReducer) needs to be defined somewhere
-const severSideFileUploadReducer = (state: any, action: ServerSideAttachmentTableActions) => {
+const severSideFileUploadReducer = (state: any, _: ServerSideAttachmentTableActions) => {
   // Implement the reducer logic here
   return state;
 };
 
 const useServerSideAttachmentWithMiddleWare = ({
   afterWareFns,
-  middleWareFns,
 }: ServerSideAttachmentWithMiddleWare): ServerSideDocumentReducer => {
   const [state, dispatch] = useReducer(severSideFileUploadReducer, REDUCER_INTITIAL_STATE);
 

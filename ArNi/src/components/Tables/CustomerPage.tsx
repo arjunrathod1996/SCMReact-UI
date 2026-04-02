@@ -94,7 +94,7 @@ interface CustomerPageProps {
 
 /** --- 3. Component --- **/
 
-const CustomerPage: React.FC<CustomerPageProps> = ({ user }) => {
+const CustomerPage: React.FC<CustomerPageProps> = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [countryOptions, setCountryOptions] = useState<SelectOption[]>([]);

@@ -70,7 +70,7 @@ function reducer(state: CountryState, action: Action): CountryState {
 /** --- 3. Main Component --- **/
 
 // FIXED: Added React.FC with CountryPageProps
-const CountryPage: React.FC<CountryPageProps> = ({ user }) => {
+const CountryPage: React.FC<CountryPageProps> = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [data, setData] = useState<Country[]>([]);

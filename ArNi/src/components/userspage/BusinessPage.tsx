@@ -4,6 +4,7 @@ import React, {
   ChangeEvent,
   FormEvent,
   FocusEvent,
+  useCallback,
 } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import BusinessService, {
@@ -36,18 +37,17 @@ interface BusinessPageProps {
 
 /** --- 2. Component --- **/
 
-const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
+const BusinessPage: React.FC<BusinessPageProps> = () => {
   // Data States
-  const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [data, setData] = useState<Business[]>([]);
 
   // Search & Pagination States
   const [name, setName] = useState<string>("");
-  const [fullName, setFullName] = useState<string>("");
+  const [fullName] = useState<string>("");
   const [category, setCategory] = useState<string>(""); // Holds the Category ID for the API
   const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [endDate] = useState<Date | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [totalRows, setTotalRows] = useState<number>(0);
@@ -98,7 +98,6 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
     try {
       setLoading(true);
       const fetchedCategories = await BusinessService.fetchCategories();
-      setCategories(fetchedCategories as Category[]);
       setFilteredCategories(fetchedCategories as Category[]);
     } catch (error) {
       console.error("Error loading categories:", error);
@@ -107,7 +106,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
     }
   };
 
-  const loadTableData = async () => {
+  const loadTableData = useCallback(async () => {
     setLoading(true);
     try {
       const hasSearchFilters =
@@ -154,7 +153,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [category, currentPage, endDate, fullName, name, rowsPerPage, startDate]);
 
   useEffect(() => {
     fetchInitialData();
@@ -162,7 +161,7 @@ const BusinessPage: React.FC<BusinessPageProps> = ({ user }) => {
 
   useEffect(() => {
     loadTableData();
-  }, [currentPage, rowsPerPage]);
+  }, [currentPage, rowsPerPage, loadTableData]);
 
   /** --- 5. Event Handlers --- **/
 

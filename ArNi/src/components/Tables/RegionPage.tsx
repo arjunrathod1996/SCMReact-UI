@@ -81,12 +81,12 @@ function reducer(state: PageState, action: Action): PageState {
 /** --- 3. Main Component --- **/
 
 // FIX: Update function signature to accept the 'user' prop
-const RegionPage: React.FC<RegionPageProps> = ({ user }) => {
+const RegionPage: React.FC<RegionPageProps> = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [data, setData] = useState<Region[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [rowsPerPage] = useState<number>(10);
   const [selectedRow, setSelectedRow] = useState<Region | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [totalRows, setTotalRows] = useState<number>(0);
@@ -158,7 +158,7 @@ const RegionPage: React.FC<RegionPageProps> = ({ user }) => {
       dispatch({ type: "SET_MESSAGES", payload: { modal: "Successfully saved data." } });
       fetchData(currentPage, rowsPerPage);
       setTimeout(closeModal, 2000);
-    } catch (error) {
+    } catch {
       dispatch({ type: "SET_MESSAGES", payload: { modal: "Error saving region." } });
     }
   };

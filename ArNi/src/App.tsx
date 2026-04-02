@@ -22,7 +22,6 @@ import UserManagementPage from "./components/userspage/UserManagementPage";
 import PrivateRoute from "./components/auth/PrivateRoute";
 
 // Table Components
-import BusinessTable from "./components/Tables/BusinessTable";
 import CountryPage from "./components/Tables/CountryPage";
 import RegionPage from "./components/Tables/RegionPage";
 import MerchantPage from "./components/Tables/MerchantPage";
