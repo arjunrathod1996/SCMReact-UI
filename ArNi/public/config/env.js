@@ -4,17 +4,16 @@
       API_BASE_URL: 'http://localhost:8080',
     },
     dev: {
-      SCM_END_POINT: 'http://dev.scm.india:8080',
+      API_BASE_URL: 'http://dev.scm.india:8080',
     },
     homol: {
-      SCM_END_POINT: 'http://homol.scm.india:8080',
+      API_BASE_URL: 'http://homol.scm.india:8080',
     },
     prod: {
-      // Production environment settings
+      API_BASE_URL: '',
     },
   };
 
-  // Determine the current environment based on the hostname
   const getEnv = () => {
     const hostname = window.location.hostname;
     if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {

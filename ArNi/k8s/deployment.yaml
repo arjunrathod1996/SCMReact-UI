@@ -1,60 +1,23 @@
-# ArNi/k8s/deployment.yaml
-
-# --- Development Deployment ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: arni-react-dev
-  namespace: arni-dev
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: arni-react-dev
-  template:
-    metadata:
-      labels:
-        app: arni-react-dev
-    spec:
-      containers:
-        - name: arni-react
-          image: arni-react:dev-latest # Example image tag for dev
-          ports:
-            - containerPort: 80
-          volumeMounts:
-            - name: config-volume
-              mountPath: /usr/share/nginx/html/config
-      volumes:
-        - name: config-volume
-          configMap:
-            name: arni-react-dev-cm
-
----
-# --- Homologation/Staging Deployment ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: arni-react-homol
-  namespace: arni-homol
+  name: arni-app-deployment
+  labels:
+    app: arni-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: arni-react-homol
+      app: arni-app
   template:
     metadata:
       labels:
-        app: arni-react-homol
+        app: arni-app
     spec:
       containers:
-        - name: arni-react
-          image: arni-react:homol-latest # Example image tag for homol
-          ports:
-            - containerPort: 80
-          volumeMounts:
-            - name: config-volume
-              mountPath: /usr/share/nginx/html/config
-      volumes:
-        - name: config-volume
-          configMap:
-            name: arni-react-homol-cm
+      - name: arni-app
+        # The image name should match what is built in the CI/CD pipeline
+        # DOCKERHUB_USERNAME/arni-app:IMAGE_TAG
+        image: ${{ secrets.DOCKERHUB_USERNAME }}/arni-app:IMAGE_TAG
+        ports:
+        - containerPort: 80
