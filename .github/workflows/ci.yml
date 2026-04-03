@@ -73,7 +73,7 @@ jobs:
           args: >
             -Dsonar.projectKey=arjunrathod1996_SCMReact-UI
             -Dsonar.organization=arjunrathod1996
-            -Dsonar.sources=src
+            -Dsonar.sources=.
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
