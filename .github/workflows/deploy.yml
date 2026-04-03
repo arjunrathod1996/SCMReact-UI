@@ -8,28 +8,59 @@ on:
         required: false
         type: boolean
         default: false
-
       skip_sonar:
         description: "Skip sonar scanner"
         required: false
         type: boolean
         default: false
-
       skip_quality_gate:
         description: "Skip quality gate"
         required: false
         type: boolean
         default: false
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    # 🔐 Environment protection (configure in GitHub → Environments)
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Optional steps (UI checkboxes)
+      # -----------------------
+      # Guardrails
+      # -----------------------
+      - name: Validate branch → env mapping
+        run: |
+          if [[ "${GITHUB_REF}" != "refs/heads/main" && "${GITHUB_REF}" != "refs/heads/dev" ]]; then
+            echo "Only main→prod or dev→dev deployments are allowed"
+            exit 1
+          fi
+
+      # Ensure the image exists before attempting deploy
+      - name: Verify Docker image exists
+        run: |
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/arni-app:${{ github.sha }}"
+          echo "Checking image: $IMAGE"
+          docker manifest inspect "$IMAGE" > /dev/null 2>&1 || {
+            echo "❌ Image not found for this commit SHA. Run CI first.";
+            exit 1;
+          }
+
+      # -----------------------
+      # Optional checks (kept because you want UI toggles)
+      # -----------------------
       - name: Setup Node
         if: ${{ inputs.skip_tests == false }}
         uses: actions/setup-node@v4
@@ -57,7 +88,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # -----------------------
-      # Kubernetes
+      # Kubernetes Setup
       # -----------------------
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
@@ -67,34 +98,46 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
           export KUBECONFIG=$PWD/kubeconfig
 
-      # DEV (when dev branch selected in UI)
+      # -----------------------
+      # Deploy DEV
+      # -----------------------
       - name: Deploy to DEV
         if: github.ref == 'refs/heads/dev'
         run: |
-          IMAGE_TAG=${{ github.sha }}
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/arni-app:${{ github.sha }}
 
           kubectl apply -f k8s/configmap.yaml -n arni-dev
           kubectl apply -f k8s/deployment.yaml -n arni-dev
           kubectl apply -f k8s/service.yaml -n arni-dev
 
-          kubectl set image deployment/arni-app \
-          arni-app=${{ secrets.DOCKERHUB_USERNAME }}/arni-app:$IMAGE_TAG \
-          -n arni-dev
+          kubectl set image deployment/arni-app arni-app=$IMAGE -n arni-dev
 
-          kubectl rollout status deployment/arni-app -n arni-dev
+          kubectl rollout status deployment/arni-app -n arni-dev --timeout=120s
 
-      # PROD (when main branch selected)
+      # -----------------------
+      # Deploy PROD
+      # -----------------------
       - name: Deploy to PROD
         if: github.ref == 'refs/heads/main'
         run: |
-          IMAGE_TAG=${{ github.sha }}
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/arni-app:${{ github.sha }}
 
           kubectl apply -f k8s/configmap.yaml -n arni-prod
           kubectl apply -f k8s/deployment.yaml -n arni-prod
           kubectl apply -f k8s/service.yaml -n arni-prod
 
-          kubectl set image deployment/arni-app \
-          arni-app=${{ secrets.DOCKERHUB_USERNAME }}/arni-app:$IMAGE_TAG \
-          -n arni-prod
+          kubectl set image deployment/arni-app arni-app=$IMAGE -n arni-prod
 
-          kubectl rollout status deployment/arni-app -n arni-prod
+          kubectl rollout status deployment/arni-app -n arni-prod --timeout=180s
+
+      # -----------------------
+      # Rollback on failure (enterprise safety)
+      # -----------------------
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            kubectl rollout undo deployment/arni-app -n arni-prod || true
+          else
+            kubectl rollout undo deployment/arni-app -n arni-dev || true
+          fi
