@@ -104,6 +104,8 @@ jobs:
       - name: Deploy to DEV
         if: github.ref == 'refs/heads/dev'
         run: |
+          cd ArNi
+
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/arni-app:${{ github.sha }}
 
           kubectl apply -f k8s/configmap.yaml -n arni-dev
@@ -120,15 +122,17 @@ jobs:
       - name: Deploy to PROD
         if: github.ref == 'refs/heads/main'
         run: |
-          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/arni-app:${{ github.sha }}
+          cd ArNi
 
           kubectl apply -f k8s/configmap.yaml -n arni-prod
           kubectl apply -f k8s/deployment.yaml -n arni-prod
           kubectl apply -f k8s/service.yaml -n arni-prod
 
-          kubectl set image deployment/arni-app arni-app=$IMAGE -n arni-prod
+          kubectl set image deployment/arni-app \
+          arni-app=${{ secrets.DOCKERHUB_USERNAME }}/arni-app:${{ github.sha }} \
+          -n arni-prod
 
-          kubectl rollout status deployment/arni-app -n arni-prod --timeout=180s
+          kubectl rollout status deployment/arni-app -n arni-prod
 
       # -----------------------
       # Rollback on failure (enterprise safety)
