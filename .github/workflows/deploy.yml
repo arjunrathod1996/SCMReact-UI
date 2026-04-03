@@ -15,6 +15,24 @@ on:
         description: "Docker Image Tag (commit SHA)"
         required: true
 
+      skip_tests:
+        description: "Skip test cases"
+        required: false
+        type: boolean
+        default: false
+
+      skip_sonar:
+        description: "Skip sonar scanner"
+        required: false
+        type: boolean
+        default: false
+
+      skip_quality_gate:
+        description: "Skip quality gate"
+        required: false
+        type: boolean
+        default: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,6 +41,38 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # -----------------------
+      # Optional steps (UI controlled)
+      # -----------------------
+      - name: Setup Node
+        if: ${{ inputs.skip_tests == false }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        if: ${{ inputs.skip_tests == false }}
+        run: |
+          cd ArNi
+          npm ci
+
+      - name: Run Tests
+        if: ${{ inputs.skip_tests == false }}
+        run: |
+          cd ArNi
+          npm run test --if-present
+
+      - name: Sonar Scan
+        if: ${{ inputs.skip_sonar == false }}
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: ./ArNi
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # -----------------------
+      # Kubernetes Deploy
+      # -----------------------
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
 
