@@ -2,14 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: arni-app-service
+  namespace: arni-dev   # ✅ ADD THIS
+
 spec:
-  # Use LoadBalancer to expose the service outside of the cluster.
-  # On cloud providers, this will provision a cloud load balancer.
   type: LoadBalancer
+  selector:
+    app: arni-app
+
   ports:
     - port: 80
       targetPort: 80
-      protocol: TCP
-  selector:
-    # This selector must match the labels in the deployment.yaml
-    app: arni-app
