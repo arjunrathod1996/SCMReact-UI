@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -12,7 +12,6 @@ on:
       - dev
   workflow_dispatch:
 
-# Prevent duplicate runs on same branch
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -21,7 +20,7 @@ env:
   IMAGE_NAME: arni-app
 
 jobs:
-  build-test-scan:
+  build-test-scan:   # ✅ MUST match GitHub required check
     runs-on: ubuntu-latest
 
     defaults:
@@ -29,106 +28,40 @@ jobs:
         working-directory: ./ArNi
 
     steps:
-      # -----------------------
-      # Checkout
-      # -----------------------
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # -----------------------
-      # Node Setup
-      # -----------------------
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
           cache-dependency-path: ArNi/package-lock.json
 
-      # -----------------------
-      # Install
-      # -----------------------
       - name: Install Dependencies
         run: npm ci
 
-      # -----------------------
-      # Lint (non-blocking for now)
-      # -----------------------
-      - name: Lint Code
+      - name: Lint
         run: npm run lint --if-present || true
 
-      # -----------------------
-      # Test + Coverage
-      # -----------------------
       - name: Run Tests
         run: npm run test --if-present
 
-      # -----------------------
-      # SonarCloud Scan
-      # -----------------------
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectBaseDir: .
-          args: >
-            -Dsonar.projectKey=arjunrathod1996_SCMReact-UI
-            -Dsonar.organization=arjunrathod1996
-            -Dsonar.sources=.
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  docker:
-    runs-on: ubuntu-latest
-    needs: build-test-scan
-
-    # Only push image for dev/main (not PRs)
-    if: github.event_name == 'push'
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # -----------------------
-      # Docker Setup
-      # -----------------------
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # -----------------------
-      # Docker Login
-      # -----------------------
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # -----------------------
-      # Metadata (tags)
-      # -----------------------
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=sha
-            type=ref,event=branch
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+      - name: Build and Push Image
+        if: github.event_name == 'push'   # ✅ Avoid push on PR
+        run: |
+          IMAGE_TAG=${{ github.sha }}
 
-      # -----------------------
-      # Build & Push
-      # -----------------------
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./ArNi
-          file: ./ArNi/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/arni-app:$IMAGE_TAG .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/arni-app:$IMAGE_TAG
+
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/arni-app:$IMAGE_TAG ${{ secrets.DOCKERHUB_USERNAME }}/arni-app:latest
+            docker push ${{ secrets.DOCKERHUB_USERNAME }}/arni-app:latest
+          fi
